@@ -40,7 +40,11 @@ const App: React.FC = () => {
       setGameState(GameState.PLAYING);
     } catch (err) {
       console.error(err);
-      setError('Could not create the game. Please try again!');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Could not create the game. Please try again!');
+      }
       setGameState(GameState.SELECTING_CATEGORY);
     }
   }, [gameCategory]);

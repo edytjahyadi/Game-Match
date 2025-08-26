@@ -1,7 +1,19 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { GameCategory, MatchPair } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI | null = null;
+
+const getAiClient = (): GoogleGenAI => {
+  if (!ai) {
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      throw new Error("Configuration Error: The API_KEY environment variable is not set. Please ensure it is configured in your deployment environment.");
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
+
 
 const getPromptAndSchemaForCategory = (category: GameCategory, pairs: number) => {
   const baseDescription = `Generate ${pairs} unique pairs of items for a children's memory matching game (ages 7-9).`;
@@ -43,7 +55,8 @@ export const generateMatchingPairs = async (category: GameCategory, pairs: numbe
   const { prompt, schema } = getPromptAndSchemaForCategory(category, pairs);
 
   try {
-    const response = await ai.models.generateContent({
+    const client = getAiClient();
+    const response = await client.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
@@ -71,6 +84,7 @@ export const generateMatchingPairs = async (category: GameCategory, pairs: numbe
 
   } catch (error) {
     console.error("Error generating content from Gemini:", error);
-    throw new Error("Failed to generate game content. Please try again.");
+    // Re-throw the original error to be handled by the UI component
+    throw error;
   }
 };
