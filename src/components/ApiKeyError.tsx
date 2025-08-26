@@ -9,7 +9,6 @@ const ApiKeyError: React.FC = () => {
       </p>
       <div className="text-left bg-white/70 p-4 rounded-lg text-slate-700">
         <p className="font-bold mb-2">If you are the developer:</p>
-        {/* fix: Updated instructions to use API_KEY instead of VITE_API_KEY as per guidelines. */}
         <ol className="list-decimal list-inside space-y-2">
           <li>
             Please ensure you have set up an <code>API_KEY</code> environment variable in your deployment service (e.g., Vercel, Netlify).

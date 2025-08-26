@@ -3,7 +3,6 @@ import { GameCategory, MatchPair } from '../types';
 
 let ai: GoogleGenAI | null = null;
 
-// fix: Use process.env.API_KEY as per guidelines. This also resolves the TypeScript error.
 export const checkApiKey = (): boolean => {
   const apiKey = process.env.API_KEY;
   if (apiKey) {
