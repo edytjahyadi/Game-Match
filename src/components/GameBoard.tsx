@@ -1,15 +1,20 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { MatchPair, CardData, GameCategory } from '../types';
+import { MatchPair, CardData, GameCategory, Difficulty } from '../types';
 import Card from './Card';
 import { playFlipSound, playMatchSound, playMismatchSound } from '../services/audioService';
-import HomeIcon from './icons/HomeIcon';
+import DemoModeBanner from './DemoModeBanner';
+import GameNavBar from './GameNavBar';
 
 interface GameBoardProps {
   pairs: MatchPair[];
   onGameEnd: () => void;
   onGoHome: () => void;
+  onGoBack: () => void;
   isFinished?: boolean;
   category: GameCategory | null;
+  difficulty: Difficulty | null;
+  isDemoMode?: boolean;
 }
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -42,7 +47,7 @@ const getGridConfig = (cardCount: number) => {
     return { grid: 'grid-cols-5', gap: 'gap-2 md:gap-3', isHard: true };
 };
 
-const GameBoard: React.FC<GameBoardProps> = ({ pairs, onGameEnd, isFinished = false, category, onGoHome }) => {
+const GameBoard: React.FC<GameBoardProps> = ({ pairs, onGameEnd, isFinished = false, category, difficulty, onGoHome, onGoBack, isDemoMode = false }) => {
   const [cards, setCards] = useState<CardData[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
@@ -118,8 +123,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ pairs, onGameEnd, isFinished = fa
   const { grid, gap, isHard } = getGridConfig(cards.length);
 
   return (
-    <div className="flex flex-col items-center gap-6">
-        <div className={`grid ${grid} ${gap} p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg`}>
+    <div className="flex flex-col items-center gap-6 w-full">
+      {isDemoMode && <DemoModeBanner />}
+      <div className={`grid ${grid} ${gap} p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg`}>
         {cards.map((card, index) => {
             let soundToPlay: string | undefined = undefined;
             if (category === GameCategory.ANIMALS && !card.isSound) {
@@ -141,17 +147,15 @@ const GameBoard: React.FC<GameBoardProps> = ({ pairs, onGameEnd, isFinished = fa
                 />
             );
         })}
-        </div>
-        {!isFinished && (
-            <button
-                onClick={onGoHome}
-                className="flex items-center gap-2 font-semibold text-slate-600 bg-white/70 px-5 py-2 rounded-xl shadow-md hover:bg-white hover:text-indigo-600 transition-all duration-300 transform hover:scale-105"
-                aria-label="Quit Game"
-            >
-                <HomeIcon className="w-5 h-5" />
-                <span>Quit Game</span>
-            </button>
-        )}
+      </div>
+      {!isFinished && (
+        <GameNavBar 
+            onGoBack={onGoBack} 
+            onQuit={onGoHome}
+            category={category}
+            difficulty={difficulty}
+        />
+      )}
     </div>
   );
 };

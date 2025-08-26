@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { GameCategory, MatchPair } from '../types';
+import { getMockData } from "./mockData";
 
 let ai: GoogleGenAI | null = null;
 
@@ -51,7 +52,7 @@ const getPromptAndSchemaForCategory = (category: GameCategory, pairs: number) =>
   return { prompt, schema };
 };
 
-export const generateMatchingPairs = async (category: GameCategory, pairs: number): Promise<MatchPair[]> => {
+export const generateMatchingPairs = async (category: GameCategory, pairs: number): Promise<{ pairs: MatchPair[]; isMock: boolean; }> => {
   const { prompt, schema } = getPromptAndSchemaForCategory(category, pairs);
 
   try {
@@ -80,11 +81,15 @@ export const generateMatchingPairs = async (category: GameCategory, pairs: numbe
         throw new Error("API returned insufficient valid pairs.");
     }
 
-    return validatedPairs.slice(0, pairs);
+    return { pairs: validatedPairs.slice(0, pairs), isMock: false };
 
   } catch (error) {
+    if (error instanceof Error && error.message.includes("API_KEY environment variable is not set")) {
+        console.warn("API Key not found. Falling back to mock data for a seamless demo experience.");
+        return { pairs: getMockData(category, pairs), isMock: true };
+    }
     console.error("Error generating content from Gemini:", error);
-    // Re-throw the original error to be handled by the UI component
+    // Re-throw other errors to be handled by the UI component
     throw error;
   }
 };

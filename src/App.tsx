@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(0);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   const handleCategorySelect = useCallback((category: GameCategory) => {
     initAudioContext();
@@ -34,8 +35,9 @@ const App: React.FC = () => {
     setError(null);
     try {
       const pairsCount = PAIRS_PER_DIFFICULTY[selectedDifficulty];
-      const pairs = await generateMatchingPairs(gameCategory, pairsCount);
+      const { pairs, isMock } = await generateMatchingPairs(gameCategory, pairsCount);
       setMatchPairs(pairs);
+      setIsDemoMode(isMock);
       setStartTime(Date.now());
       setGameState(GameState.PLAYING);
     } catch (err) {
@@ -69,6 +71,7 @@ const App: React.FC = () => {
     setDifficulty(null);
     setMatchPairs([]);
     setError(null);
+    setIsDemoMode(false);
   }, []);
 
   const renderContent = () => {
@@ -76,11 +79,11 @@ const App: React.FC = () => {
       case GameState.LOADING:
         return <LoadingSpinner category={gameCategory} onBack={handleBackToDifficulty} />;
       case GameState.PLAYING:
-        return <GameBoard pairs={matchPairs} onGameEnd={handleGameEnd} category={gameCategory} onGoHome={handlePlayAgain} />;
+        return <GameBoard pairs={matchPairs} onGameEnd={handleGameEnd} category={gameCategory} onGoHome={handlePlayAgain} isDemoMode={isDemoMode} onGoBack={handleBackToDifficulty} difficulty={difficulty} />;
       case GameState.FINISHED:
         return (
           <>
-            <GameBoard pairs={matchPairs} onGameEnd={() => {}} isFinished={true} category={gameCategory} onGoHome={() => {}} />
+            <GameBoard pairs={matchPairs} onGameEnd={() => {}} isFinished={true} category={gameCategory} onGoHome={() => {}} isDemoMode={isDemoMode} onGoBack={() => {}} difficulty={difficulty} />
             <GameEndModal
               onPlayAgain={handlePlayAgain}
               startTime={startTime}
