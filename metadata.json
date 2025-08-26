@@ -1,0 +1,5 @@
+{
+  "name": "Gemini Match Masters",
+  "description": "An interactive and fun educational matching game for children aged 7-9. It uses Gemini to generate new content for categories like animals, vocabulary, and math, keeping the game fresh and engaging.",
+  "requestFramePermissions": []
+}
