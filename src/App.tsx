@@ -1,6 +1,7 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { GameCategory, GameState, MatchPair, Difficulty } from './types';
-import { generateMatchingPairs, checkApiKey } from './services/geminiService';
+import { generateMatchingPairs } from './services/geminiService';
 import CategorySelector from './components/CategorySelector';
 import GameBoard from './components/GameBoard';
 import GameEndModal from './components/GameEndModal';
@@ -9,7 +10,6 @@ import Header from './components/Header';
 import { PAIRS_PER_DIFFICULTY } from './constants';
 import { initAudioContext } from './services/audioService';
 import DifficultySelector from './components/DifficultySelector';
-import ApiKeyError from './components/ApiKeyError';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.SELECTING_CATEGORY);
@@ -19,13 +19,6 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(0);
-  const [isApiKeyMissing, setIsApiKeyMissing] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!checkApiKey()) {
-      setIsApiKeyMissing(true);
-    }
-  }, []);
 
   const handleCategorySelect = useCallback((category: GameCategory) => {
     initAudioContext();
@@ -75,10 +68,6 @@ const App: React.FC = () => {
   }, []);
 
   const renderContent = () => {
-    if (isApiKeyMissing) {
-      return <ApiKeyError />;
-    }
-    
     switch (gameState) {
       case GameState.LOADING:
         return <LoadingSpinner category={gameCategory} onBack={handleBackToDifficulty} />;
@@ -99,6 +88,7 @@ const App: React.FC = () => {
         return <DifficultySelector onSelectDifficulty={handleDifficultySelect} onBack={handleBackToCategory} category={gameCategory!} />;
       case GameState.SELECTING_CATEGORY:
       default:
+        // FIX: Corrected function name from handleSelectCategory to handleCategorySelect
         return <CategorySelector onSelectCategory={handleCategorySelect} error={error} />;
     }
   };
