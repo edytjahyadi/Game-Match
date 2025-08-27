@@ -19,7 +19,6 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(0);
-  const [isDemoMode, setIsDemoMode] = useState(false);
 
   const handleCategorySelect = useCallback((category: GameCategory) => {
     initAudioContext();
@@ -27,28 +26,31 @@ const App: React.FC = () => {
     setGameState(GameState.SELECTING_DIFFICULTY);
   }, []);
 
-  const handleDifficultySelect = useCallback(async (selectedDifficulty: Difficulty) => {
+  const handleDifficultySelect = useCallback((selectedDifficulty: Difficulty) => {
     if (!gameCategory) return;
 
     setDifficulty(selectedDifficulty);
     setGameState(GameState.LOADING);
     setError(null);
-    try {
-      const pairsCount = PAIRS_PER_DIFFICULTY[selectedDifficulty];
-      const { pairs, isMock } = await generateMatchingPairs(gameCategory, pairsCount);
-      setMatchPairs(pairs);
-      setIsDemoMode(isMock);
-      setStartTime(Date.now());
-      setGameState(GameState.PLAYING);
-    } catch (err) {
-      console.error(err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Could not create the game. Please try again!');
-      }
-      setGameState(GameState.SELECTING_CATEGORY);
-    }
+
+    // Simulate a short loading time for a better user experience, as mock data loads instantly.
+    setTimeout(() => {
+        try {
+            const pairsCount = PAIRS_PER_DIFFICULTY[selectedDifficulty];
+            const pairs = generateMatchingPairs(gameCategory, pairsCount);
+            setMatchPairs(pairs);
+            setStartTime(Date.now());
+            setGameState(GameState.PLAYING);
+        } catch (err) {
+            console.error(err);
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('Could not create the game. Please try again!');
+            }
+            setGameState(GameState.SELECTING_CATEGORY);
+        }
+    }, 500); // 0.5 second delay
   }, [gameCategory]);
   
   const handleBackToCategory = useCallback(() => {
@@ -71,7 +73,6 @@ const App: React.FC = () => {
     setDifficulty(null);
     setMatchPairs([]);
     setError(null);
-    setIsDemoMode(false);
   }, []);
 
   const renderContent = () => {
@@ -79,11 +80,11 @@ const App: React.FC = () => {
       case GameState.LOADING:
         return <LoadingSpinner category={gameCategory} onBack={handleBackToDifficulty} />;
       case GameState.PLAYING:
-        return <GameBoard pairs={matchPairs} onGameEnd={handleGameEnd} category={gameCategory} onGoHome={handlePlayAgain} isDemoMode={isDemoMode} onGoBack={handleBackToDifficulty} difficulty={difficulty} />;
+        return <GameBoard pairs={matchPairs} onGameEnd={handleGameEnd} category={gameCategory} onGoHome={handlePlayAgain} onGoBack={handleBackToDifficulty} difficulty={difficulty} />;
       case GameState.FINISHED:
         return (
           <>
-            <GameBoard pairs={matchPairs} onGameEnd={() => {}} isFinished={true} category={gameCategory} onGoHome={() => {}} isDemoMode={isDemoMode} onGoBack={() => {}} difficulty={difficulty} />
+            <GameBoard pairs={matchPairs} onGameEnd={() => {}} isFinished={true} category={gameCategory} onGoHome={() => {}} onGoBack={() => {}} difficulty={difficulty} />
             <GameEndModal
               onPlayAgain={handlePlayAgain}
               startTime={startTime}
@@ -95,7 +96,6 @@ const App: React.FC = () => {
         return <DifficultySelector onSelectDifficulty={handleDifficultySelect} onBack={handleBackToCategory} category={gameCategory!} />;
       case GameState.SELECTING_CATEGORY:
       default:
-        // FIX: Corrected function name from handleSelectCategory to handleCategorySelect
         return <CategorySelector onSelectCategory={handleCategorySelect} error={error} />;
     }
   };

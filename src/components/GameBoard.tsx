@@ -1,9 +1,9 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { MatchPair, CardData, GameCategory, Difficulty } from '../types';
 import Card from './Card';
 import { playFlipSound, playMatchSound, playMismatchSound } from '../services/audioService';
-import DemoModeBanner from './DemoModeBanner';
 import GameNavBar from './GameNavBar';
 
 interface GameBoardProps {
@@ -14,7 +14,6 @@ interface GameBoardProps {
   isFinished?: boolean;
   category: GameCategory | null;
   difficulty: Difficulty | null;
-  isDemoMode?: boolean;
 }
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -47,7 +46,7 @@ const getGridConfig = (cardCount: number) => {
     return { grid: 'grid-cols-5', gap: 'gap-2 md:gap-3', isHard: true };
 };
 
-const GameBoard: React.FC<GameBoardProps> = ({ pairs, onGameEnd, isFinished = false, category, difficulty, onGoHome, onGoBack, isDemoMode = false }) => {
+const GameBoard: React.FC<GameBoardProps> = ({ pairs, onGameEnd, isFinished = false, category, difficulty, onGoHome, onGoBack }) => {
   const [cards, setCards] = useState<CardData[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
@@ -124,7 +123,6 @@ const GameBoard: React.FC<GameBoardProps> = ({ pairs, onGameEnd, isFinished = fa
 
   return (
     <div className="flex flex-col items-center gap-6 w-full">
-      {isDemoMode && <DemoModeBanner />}
       <div className={`grid ${grid} ${gap} p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg`}>
         {cards.map((card, index) => {
             let soundToPlay: string | undefined = undefined;
